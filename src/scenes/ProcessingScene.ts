@@ -14,6 +14,7 @@ interface SectionState {
   max: number
   yieldType: ResourceType
   yieldAmount: number
+  containsSpool: boolean
 }
 
 export class ProcessingScene extends Phaser.Scene {
@@ -24,6 +25,7 @@ export class ProcessingScene extends Phaser.Scene {
   private stressMax = 100
   private collectedThisRun = { alloy: 0, oil: 0, nodes: 0, biomass: 0 }
   private isRuined = false
+  private spoolFoundThisRun = false
 
   private sectionGfx!: Phaser.GameObjects.Graphics
   private sectionBars: Phaser.GameObjects.Text[] = []
@@ -54,11 +56,20 @@ export class ProcessingScene extends Phaser.Scene {
       max: s.integrity,
       yieldType: s.yieldType,
       yieldAmount: s.yieldAmount,
+      containsSpool: false,
     }))
     this.stress = 0
     this.isRuined = false
     this.collectedThisRun = { alloy: 0, oil: 0, nodes: 0, biomass: 0 }
     this.sectionBars = []
+
+    // Mark a random section as containing a Data Spool (only on the 4th wreck)
+    this.spoolFoundThisRun = false
+    const gs = GameState.get()
+    if (!gs.hasReadSpool && gs.completedWrecks.length >= 3) {
+      const idx = Phaser.Math.Between(0, this.sections.length - 1)
+      this.sections[idx].containsSpool = true
+    }
 
     const W = this.scale.width
     const H = this.scale.height
@@ -169,11 +180,15 @@ export class ProcessingScene extends Phaser.Scene {
       g.lineStyle(1, active ? 0xff8800 : 0x553300, 1)
       g.strokeRect(x, y, this.boxW, this.boxH)
 
-      if (depleted) {
-        g.lineStyle(1, 0x553300, 0.5)
-        g.lineBetween(x, y, x + this.boxW, y + this.boxH)
-        g.lineBetween(x + this.boxW, y, x, y + this.boxH)
-      }
+    if (depleted) {
+      g.lineStyle(1, 0x553300, 0.5)
+      g.lineBetween(x, y, x + this.boxW, y + this.boxH)
+      g.lineBetween(x + this.boxW, y, x, y + this.boxH)
+    }
+
+    if (s.containsSpool && s.current > 0) {
+      // Reserved — icon appears on depletion
+    }
 
       // Integrity bar
       const barX = x
@@ -249,6 +264,30 @@ export class ProcessingScene extends Phaser.Scene {
       targets: flash, alpha: 0, y: 180, duration: 800,
       onComplete: () => flash.destroy(),
     })
+
+    // Data Spool found — show permanent icon in section center
+    if (s.containsSpool && !this.spoolFoundThisRun) {
+      this.spoolFoundThisRun = true
+      const W = this.scale.width
+      const cx = this.sectionStartX + index * (this.boxW + this.gap) + this.boxW / 2
+      const cy = this.sectionY + this.boxH / 2
+
+      this.add.text(cx, cy, '[ DATA SPOOL ]', {
+        fontFamily: 'monospace', fontSize: '13px', color: '#44ff88',
+      }).setOrigin(0.5)
+
+      const msg = this.add.text(W / 2, 240, 'LOG RECOVERED — 1 OF 1', {
+        fontFamily: 'monospace', fontSize: '11px', color: '#44ff88',
+      }).setOrigin(0.5)
+
+      this.tweens.add({
+        targets: msg,
+        alpha: 0, y: '-=20',
+        duration: 2000,
+        delay: 1500,
+        onComplete: () => msg.destroy(),
+      })
+    }
   }
 
   private advanceToNextSection() {
