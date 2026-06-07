@@ -39,6 +39,7 @@ export interface GameState {
   hasUnlockedExtractor2: boolean
   hasReadSpool: boolean
   completedWrecks: string[]
+  lastCompletedWreck: string | null
 }
 
 export interface ContactData {

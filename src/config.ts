@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { BootScene } from './scenes/BootScene'
 import { ScannerScene } from './scenes/ScannerScene'
 import { ProcessingScene } from './scenes/ProcessingScene'
+import { ShipScene } from './scenes/ShipScene'
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.WEBGL,
@@ -13,5 +14,5 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, ScannerScene, ProcessingScene],
+  scene: [BootScene, ScannerScene, ProcessingScene, ShipScene],
 }

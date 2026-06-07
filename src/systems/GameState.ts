@@ -8,6 +8,7 @@ const defaultState: GameStateType = {
   hasUnlockedExtractor2: false,
   hasReadSpool: false,
   completedWrecks: [],
+  lastCompletedWreck: null,
 }
 
 let state: GameStateType = { ...defaultState }
@@ -36,6 +37,7 @@ export const GameState = {
   completeWreck(id: string) {
     if (!state.completedWrecks.includes(id)) {
       state.completedWrecks.push(id)
+      state.lastCompletedWreck = id
     }
   },
 
