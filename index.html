@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Maw</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0a0a0a;
+      font-family: monospace;
+    }
+
+    /* CRT monitor casing — fills full viewport */
+    .monitor {
+      position: absolute;
+      inset: 0;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+    }
+
+    /* Inner screen bezel — wraps the screen with padding */
+    .screen-bezel {
+      position: relative;
+      background: #111;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow:
+        0 0 0 2px #2a2a2a,
+        inset 0 0 20px rgba(0,0,0,0.6),
+        0 4px 30px rgba(0,0,0,0.5);
+    }
+
+    /* The actual screen surface */
+    .screen {
+      width: 80vw;
+      max-width: 960px;
+      aspect-ratio: 16 / 9;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
+    }
+
+    #game-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    #game-container canvas {
+      display: block;
+    }
+
+    /* Top bezel branding */
+    .brand {
+      position: absolute;
+      top: 7px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 8px;
+      color: #333;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      background: #1a1a1a;
+      padding: 0 10px;
+    }
+
+    /* Power LED */
+    .led {
+      position: absolute;
+      bottom: 10px;
+      right: 36px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #003300;
+      box-shadow: 0 0 4px #003300;
+      animation: led-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes led-pulse {
+      0%, 100% { background: #003300; box-shadow: 0 0 4px #003300; }
+      50% { background: #00ff00; box-shadow: 0 0 8px #00ff00; }
+    }
+
+    /* Bottom bezel label */
+    .model-label {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 7px;
+      color: #2a2a2a;
+      letter-spacing: 1px;
+      background: #1a1a1a;
+      padding: 0 8px;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div class="monitor">
+    <div class="screen-bezel">
+      <div class="brand">Maw Industries</div>
+      <div class="screen">
+        <div id="game-container"></div>
+      </div>
+      <div class="led"></div>
+      <div class="model-label">CRT Terminal MK-I</div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
