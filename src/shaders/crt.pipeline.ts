@@ -15,8 +15,8 @@ void main() {
   vec2 center = uv - 0.5;
   float dist = dot(center, center);
 
-  // Barrel distortion (subtle)
-  uv = uv + center * dist * 0.06;
+  // Barrel distortion (barely there)
+  uv = uv + center * dist * 0.01;
 
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
@@ -25,8 +25,8 @@ void main() {
 
   vec4 color = texture2D(uMainSampler, uv);
 
-  // Scanlines
-  float scanline = sin(uv.y * 480.0 * 3.14159) * 0.04 + 0.96;
+  // Scanlines (subtle)
+  float scanline = sin(uv.y * 480.0 * 3.14159) * 0.015 + 0.985;
   color.rgb *= scanline;
 
   // Phosphor glow
@@ -34,12 +34,12 @@ void main() {
   color.rgb *= 0.92;
   color.rgb *= uColorTint;
 
-  // Chromatic aberration
-  float aberration = 0.002;
+  // Chromatic aberration (light touch)
+  float aberration = 0.001;
   float r = texture2D(uMainSampler, uv + vec2(aberration, 0.0)).r;
   float b = texture2D(uMainSampler, uv - vec2(aberration, 0.0)).b;
-  color.r = mix(color.r, r, 0.3);
-  color.b = mix(color.b, b, 0.3);
+  color.r = mix(color.r, r, 0.12);
+  color.b = mix(color.b, b, 0.12);
 
   gl_FragColor = color;
 }
