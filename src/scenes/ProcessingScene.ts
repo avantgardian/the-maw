@@ -288,9 +288,6 @@ export class ProcessingScene extends Phaser.Scene {
   }
 
   private detach() {
-    if (!GameState.get().hasReadSpool) {
-      GameState.readSpool()
-    }
     this.scene.start('ShipScene')
   }
 

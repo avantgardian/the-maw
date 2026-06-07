@@ -48,3 +48,10 @@ export interface ContactData {
   distance: number
   revealed: boolean
 }
+
+export interface SpoolDef {
+  id: string
+  title: string
+  thread: string
+  lines: string[]
+}

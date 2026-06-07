@@ -110,9 +110,17 @@ export class ShipScene extends Phaser.Scene {
       backgroundColor: W_BG,
       padding: { x: 10, y: 5 },
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.scene.start('ScannerScene'))
       .on('pointerover', () => returnBtn.setColor('#ffffff'))
       .on('pointerout', () => returnBtn.setColor(ACCENT))
+      .on('pointerdown', () => {
+        const gs = GameState.get()
+        if (!gs.hasReadSpool) {
+          gs.hasReadSpool = true
+          this.scene.start('SpoolScene', { spoolId: 'last-voices-01' })
+        } else {
+          this.scene.start('ScannerScene')
+        }
+      })
 
     // Footer
     this.add.text(10, H - 14, 'SYS> STANDBY', {
