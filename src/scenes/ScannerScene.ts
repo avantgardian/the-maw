@@ -4,7 +4,7 @@ import { GameState } from '../systems/GameState'
 import { getAvailableShips, getShip } from '../data/ships'
 import type { ShipDef } from '../types'
 
-const SWEEP_DURATION = 1500
+const SWEEP_DURATION = 3000
 const G = '#00ff66'
 const G_DIM = '#004422'
 
@@ -12,9 +12,11 @@ type Phase = 'idle' | 'contactLost' | 'sweeping' | 'ready'
 
 export class ScannerScene extends Phaser.Scene {
   private sweepAngle = 0
+  private ambientAngle = 0
   private isSweeping = false
+  private ambientScan = false
   private sweepStartTime = 0
-  private contacts: { shipId: string; angle: number; revealed: boolean }[] = []
+  private contacts: { shipId: string; angle: number; revealed: boolean; lastPinged: number }[] = []
   private selectedShipId: string | null = null
   private sweepGraphics!: Phaser.GameObjects.Graphics
   private contactLabels: Phaser.GameObjects.Text[] = []
@@ -50,6 +52,7 @@ export class ScannerScene extends Phaser.Scene {
     this.contactLabels = []
     this.selectedShipId = null
     this.isSweeping = false
+    this.ambientScan = false
     this.contacts = []
 
     // Title
@@ -148,7 +151,7 @@ export class ScannerScene extends Phaser.Scene {
     }
   }
 
-  update(time: number) {
+  update(time: number, delta: number) {
     const cx = 240
     const cy = 240
     const radius = 180
@@ -184,7 +187,7 @@ export class ScannerScene extends Phaser.Scene {
       this.sweepGraphics.lineBetween(px + 6, py - 6, px - 6, py + 6)
     }
 
-    // Sweep line
+    // Sweep line — only during active sweep
     if (this.isSweeping) {
       const elapsed = time - this.sweepStartTime
       const progress = Math.min(elapsed / SWEEP_DURATION, 1)
@@ -194,38 +197,81 @@ export class ScannerScene extends Phaser.Scene {
         this.isSweeping = false
         this.onSweepComplete()
       }
+
+      const sx = cx + Math.cos(this.sweepAngle) * radius * 0.95
+      const sy = cy + Math.sin(this.sweepAngle) * radius * 0.95
+
+      // Phosphor trail
+      for (let i = 0; i < 20; i++) {
+        const a = this.sweepAngle - i * 0.02
+        const px = cx + Math.cos(a) * radius * 0.95
+        const py = cy + Math.sin(a) * radius * 0.95
+        this.sweepGraphics.lineStyle(1, 0x00ff66, 0.3 - i * 0.015)
+        this.sweepGraphics.lineBetween(cx, cy, px, py)
+      }
+
+      this.sweepGraphics.lineStyle(1, 0x00ff66, 0.8)
+      this.sweepGraphics.lineBetween(cx, cy, sx, sy)
+    } else if (this.ambientScan) {
+      this.ambientAngle = (this.ambientAngle + 0.00209 * delta) % (Math.PI * 2)
+      const sx = cx + Math.cos(this.ambientAngle) * radius * 0.95
+      const sy = cy + Math.sin(this.ambientAngle) * radius * 0.95
+
+      for (let i = 0; i < 10; i++) {
+        const a = this.ambientAngle - i * 0.03
+        const px = cx + Math.cos(a) * radius * 0.95
+        const py = cy + Math.sin(a) * radius * 0.95
+        this.sweepGraphics.lineStyle(1, 0x00ff66, 0.15 - i * 0.013)
+        this.sweepGraphics.lineBetween(cx, cy, px, py)
+      }
+
+      this.sweepGraphics.lineStyle(1, 0x00ff66, 0.4)
+      this.sweepGraphics.lineBetween(cx, cy, sx, sy)
     }
 
-    const sweepLen = this.isSweeping ? this.sweepAngle : (time / 8000) * Math.PI * 2
-    const sx = cx + Math.cos(sweepLen) * radius * 0.95
-    const sy = cy + Math.sin(sweepLen) * radius * 0.95
-
-    // Phosphor trail
-    for (let i = 0; i < 20; i++) {
-      const a = sweepLen - i * 0.02
-      const px = cx + Math.cos(a) * radius * 0.95
-      const py = cy + Math.sin(a) * radius * 0.95
-      this.sweepGraphics.lineStyle(1, 0x00ff66, 0.3 - i * 0.015)
-      this.sweepGraphics.lineBetween(cx, cy, px, py)
-    }
-
-    this.sweepGraphics.lineStyle(1, 0x00ff66, 0.8)
-    this.sweepGraphics.lineBetween(cx, cy, sx, sy)
-
-    // Contacts on radar
+    // Contacts on radar — dim until sweep passes over them
+    const lineAngle = this.isSweeping ? this.sweepAngle : this.ambientScan ? this.ambientAngle : -1
     for (const c of this.contacts) {
       if (!c.revealed) continue
+
+      // Check if sweep line passes over this contact
+      if (lineAngle >= 0) {
+        let diff = lineAngle - c.angle
+        diff = ((diff + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI
+        if (Math.abs(diff) < 0.08) {
+          c.lastPinged = time
+        }
+      }
+
+      const elapsed = time - c.lastPinged
+      const fadeStart = 300
+      const fadeEnd = 2500
+      let alpha: number
+      if (elapsed < fadeStart) {
+        alpha = 0.9
+      } else if (elapsed > fadeEnd) {
+        alpha = 0.05
+      } else {
+        alpha = 0.9 - (elapsed - fadeStart) / (fadeEnd - fadeStart) * 0.85
+      }
+
       const px = cx + Math.cos(c.angle) * radius * 0.45
       const py = cy + Math.sin(c.angle) * radius * 0.45
-      const blink = Math.sin(time / 300 + c.angle) > 0
-      this.sweepGraphics.fillStyle(0x00ff66, blink ? 0.9 : 0.4)
+      this.sweepGraphics.fillStyle(0x00ff66, alpha)
       this.sweepGraphics.fillCircle(px, py, 4)
+    }
+
+    // Pulse sweep button as call-to-action when idle
+    if (this.contacts.length === 0 && !this.isSweeping && this.phase !== 'contactLost') {
+      this.sweepBtn.setAlpha(0.55 + 0.45 * Math.sin(time / 400))
     }
   }
 
   private startSweep() {
     if (this.isSweeping) return
     this.isSweeping = true
+    this.ambientScan = false
+    this.sweepAngle = 0
     this.sweepStartTime = this.time.now
     this.sweepBtn.disableInteractive()
     this.sweepBtn.setAlpha(0.4)
@@ -242,6 +288,8 @@ export class ScannerScene extends Phaser.Scene {
     this.sweepBtn.setAlpha(1)
     this.sweepBtn.setInteractive({ useHandCursor: true })
     this.phase = 'ready'
+    this.ambientScan = true
+    this.ambientAngle = this.sweepAngle % (Math.PI * 2)
 
     const completed = GameState.get().completedWrecks
     const available = getAvailableShips(completed)
@@ -259,12 +307,14 @@ export class ScannerScene extends Phaser.Scene {
         shipId: ship.id,
         angle,
         revealed: false,
+        lastPinged: 0,
       })
     })
 
     this.contacts.forEach((c, i) => {
       this.time.delayedCall(200 + i * 300, () => {
         c.revealed = true
+        c.lastPinged = this.time.now
         this.renderContactList()
       })
     })
