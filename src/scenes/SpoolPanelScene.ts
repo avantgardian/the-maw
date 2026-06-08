@@ -6,6 +6,7 @@ const G = '#00ff66'
 const G_DIM = '#004422'
 const PANEL_X = 240
 const PANEL_W = 720
+const CR = PANEL_W - 88
 const CHAR_DELAY = 50
 
 export class SpoolPanelScene extends Phaser.Scene {
@@ -99,13 +100,13 @@ export class SpoolPanelScene extends Phaser.Scene {
     surface.lineBetween(0, 0, 0, this.scale.height)
     this.container.add(surface)
 
-    const title = this.add.text(PANEL_W / 2, 18, 'DATA SPOOL ARCHIVE', {
+    const title = this.add.text(CR / 2, 18, 'DATA SPOOL ARCHIVE', {
       fontFamily: 'monospace', fontSize: '13px', color: G,
     }).setOrigin(0.5)
     this.container.add(title)
 
     // Close
-    const closeBtn = this.add.text(PANEL_W - 14, 10, '[X]', {
+    const closeBtn = this.add.text(CR - 14, 10, '[X]', {
       fontFamily: 'monospace', fontSize: '11px', color: G_DIM,
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
     closeBtn.on('pointerdown', () => this.closePanel())
@@ -116,7 +117,7 @@ export class SpoolPanelScene extends Phaser.Scene {
     const unlocked = GameState.get().unlockedSpools
 
     if (unlocked.length === 0) {
-      const empty = this.add.text(PANEL_W / 2, this.scale.height / 2, 'NO SPOOLS RECOVERED YET\n\nDiscover them by processing wrecks.', {
+      const empty = this.add.text(CR / 2, this.scale.height / 2, 'NO SPOOLS RECOVERED YET\n\nDiscover them by processing wrecks.', {
         fontFamily: 'monospace', fontSize: '10px', color: G_DIM, align: 'center',
       }).setOrigin(0.5)
       this.container.add(empty)
@@ -128,7 +129,7 @@ export class SpoolPanelScene extends Phaser.Scene {
       return
     }
 
-    const cardW = PANEL_W - 40
+    const cardW = CR - 40
     const cardH = 80
     const gap = 12
     const startY = 44
@@ -165,12 +166,12 @@ export class SpoolPanelScene extends Phaser.Scene {
 
       const statusText = read ? '[READ]' : '[NEW]'
       const statusColor = read ? G_DIM : '#44ff88'
-      const statusL = this.add.text(PANEL_W - 30, y + cardH - 10, statusText, {
+      const statusL = this.add.text(CR - 30, y + cardH - 10, statusText, {
         fontFamily: 'monospace', fontSize: '7px', color: statusColor,
       }).setOrigin(1, 1)
       this.container.add(statusL)
 
-      const zone = this.add.zone(PANEL_W / 2, y + cardH / 2, cardW, cardH)
+      const zone = this.add.zone(CR / 2, y + cardH / 2, cardW, cardH)
         .setInteractive({ useHandCursor: true })
       const spoolId = id
       zone.on('pointerdown', () => this.openDetail(spoolId))
@@ -230,7 +231,7 @@ export class SpoolPanelScene extends Phaser.Scene {
     this.subContainer.add(backBtn)
 
     // Close
-    const closeBtn = this.add.text(PANEL_W - 14, 10, '[X]', {
+    const closeBtn = this.add.text(CR - 14, 10, '[X]', {
       fontFamily: 'monospace', fontSize: '11px', color: G_DIM,
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
     closeBtn.on('pointerdown', () => this.closePanel())
@@ -238,24 +239,24 @@ export class SpoolPanelScene extends Phaser.Scene {
     closeBtn.on('pointerout', () => closeBtn.setColor(G_DIM))
     this.subContainer.add(closeBtn)
 
-    const threadL = this.add.text(PANEL_W / 2, 34, `// ${spool.thread} //`, {
+    const threadL = this.add.text(CR / 2, 34, `// ${spool.thread} //`, {
       fontFamily: 'monospace', fontSize: '11px', color: G_DIM,
     }).setOrigin(0.5)
     this.subContainer.add(threadL)
 
-    const titleL = this.add.text(PANEL_W / 2, 48, spool.title, {
+    const titleL = this.add.text(CR / 2, 48, spool.title, {
       fontFamily: 'monospace', fontSize: '9px', color: G_DIM,
     }).setOrigin(0.5)
     this.subContainer.add(titleL)
 
-    const sep = this.add.text(PANEL_W / 2, 58, '\u2500'.repeat(48), {
+    const sep = this.add.text(CR / 2, 58, '\u2500'.repeat(48), {
       fontFamily: 'monospace', fontSize: '8px', color: G_DIM,
     }).setOrigin(0.5)
     this.subContainer.add(sep)
 
     this.displayText = this.add.text(30, 68, '', {
       fontFamily: 'monospace', fontSize: '10px', color: G, lineSpacing: 2,
-      wordWrap: { width: PANEL_W - 60 },
+      wordWrap: { width: CR - 60 },
     })
     this.subContainer.add(this.displayText)
 
@@ -313,7 +314,7 @@ export class SpoolPanelScene extends Phaser.Scene {
     this.displayText.setText(this.fullText.join('\n'))
     this.statusText.setText('SPL> DECODE COMPLETE')
 
-    const endMsg = this.add.text(PANEL_W / 2, this.scale.height - 50, 'END TRANSMISSION', {
+    const endMsg = this.add.text(CR / 2, this.scale.height - 50, 'END TRANSMISSION', {
       fontFamily: 'monospace', fontSize: '12px', color: G,
     }).setOrigin(0.5)
     this.subContainer.add(endMsg)

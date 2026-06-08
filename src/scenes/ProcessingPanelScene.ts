@@ -9,6 +9,7 @@ const O_DIM = '#553300'
 const O_BG = '#1a0e00'
 const PANEL_X = 240
 const PANEL_W = 720
+const CR = PANEL_W - 88
 const SPOOL_IDS = ['last-voices-01', 'engine-log-07', 'cargo-manifest-3b']
 
 interface SectionState {
@@ -99,21 +100,21 @@ export class ProcessingPanelScene extends Phaser.Scene {
     this.boxW = this.sections.length <= 2 ? 200 : 160
 
     const totalRowW = this.cols * this.boxW + (this.cols - 1) * this.gap
-    const startX = (PANEL_W - totalRowW) / 2
+    const startX = (CR - totalRowW) / 2
 
     // Header
-    const h = this.add.text(PANEL_W / 2, 18, `LATCHED: ${this.ship.name.toUpperCase()}`, {
+    const h = this.add.text(CR / 2, 18, `LATCHED: ${this.ship.name.toUpperCase()}`, {
       fontFamily: 'monospace', fontSize: '13px', color: O,
     }).setOrigin(0.5)
     this.container.add(h)
 
-    const h2 = this.add.text(PANEL_W / 2, 34, `MASS ${this.ship.mass}  TIER ${this.ship.tier}  RISK ${this.ship.risk}`, {
+    const h2 = this.add.text(CR / 2, 34, `MASS ${this.ship.mass}  TIER ${this.ship.tier}  RISK ${this.ship.risk}`, {
       fontFamily: 'monospace', fontSize: '8px', color: O_DIM,
     }).setOrigin(0.5)
     this.container.add(h2)
 
     // Close button
-    const closeBtn = this.add.text(PANEL_W - 14, 10, '[X]', {
+    const closeBtn = this.add.text(CR - 14, 10, '[X]', {
       fontFamily: 'monospace', fontSize: '11px', color: O_DIM,
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
     closeBtn.on('pointerdown', () => this.closePanel())
@@ -138,7 +139,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
     this.stressGfx = this.add.graphics()
     this.container.add(this.stressGfx)
 
-    this.stressLabel = this.add.text(PANEL_W - 140, stressY - 14, '0%', {
+    this.stressLabel = this.add.text(CR - 140, stressY - 14, '0%', {
       fontFamily: 'monospace', fontSize: '9px', color: O,
     })
     this.container.add(this.stressLabel)
@@ -156,7 +157,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
     this.container.add(this.statusText)
 
     // Detach button
-    this.detachBtn = this.add.text(PANEL_W - 20, 420, '[ DETACH ]', {
+    this.detachBtn = this.add.text(CR - 20, 420, '[ DETACH ]', {
       fontFamily: 'monospace', fontSize: '12px', color: O,
       backgroundColor: O_BG, padding: { x: 10, y: 5 },
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
@@ -190,7 +191,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
 
   update() {
     if (this.detached) return
-    const startX = (PANEL_W - this.cols * this.boxW - (this.cols - 1) * this.gap) / 2
+    const startX = (CR - this.cols * this.boxW - (this.cols - 1) * this.gap) / 2
     this.drawSections(startX)
     this.drawStressBar()
   }
@@ -308,7 +309,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
     const type = s.yieldType
     GameState.addResource(type, s.yieldAmount)
 
-    const flash = this.add.text(PANEL_W / 2, 190, `+${s.yieldAmount} ${type.toUpperCase()}`, {
+    const flash = this.add.text(CR / 2, 190, `+${s.yieldAmount} ${type.toUpperCase()}`, {
       fontFamily: 'monospace', fontSize: '18px', color: '#ffffff',
     }).setOrigin(0.5)
     this.tweens.add({
@@ -326,7 +327,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
 
       const row = Math.floor(index / this.cols)
       const col = index % this.cols
-      const startX = (PANEL_W - this.cols * this.boxW - (this.cols - 1) * this.gap) / 2
+      const startX = (CR - this.cols * this.boxW - (this.cols - 1) * this.gap) / 2
       const cx = startX + col * (this.boxW + this.gap) + this.boxW / 2
       const cy = 70 + row * (this.boxH + this.gap + 16) + this.boxH / 2
 
@@ -335,7 +336,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
       }).setOrigin(0.5)
       this.container.add(spoolLabel)
 
-      const msg = this.add.text(PANEL_W / 2, 230, 'LOG RECOVERED', {
+      const msg = this.add.text(CR / 2, 230, 'LOG RECOVERED', {
         fontFamily: 'monospace', fontSize: '11px', color: '#44ff88',
       }).setOrigin(0.5)
       this.container.add(msg)
@@ -365,7 +366,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
     this.cameras.main.flash(200, 255, 0, 0)
     this.updateStatus('WRECK RUPTURED — UNPROCESSED SECTIONS LOST')
 
-    const flash = this.add.text(PANEL_W / 2, this.scale.height / 2 - 40, 'WRECK RUPTURED', {
+    const flash = this.add.text(CR / 2, this.scale.height / 2 - 40, 'WRECK RUPTURED', {
       fontFamily: 'monospace', fontSize: '16px', color: '#ff4444',
     }).setOrigin(0.5)
     this.container.add(flash)
@@ -376,7 +377,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
   private clearWreck() {
     this.updateStatus('CLEAN SALVAGE — ALL SECTIONS PROCESSED')
 
-    const flash = this.add.text(PANEL_W / 2, this.scale.height / 2 - 40, 'CLEAN SALVAGE', {
+    const flash = this.add.text(CR / 2, this.scale.height / 2 - 40, 'CLEAN SALVAGE', {
       fontFamily: 'monospace', fontSize: '16px', color: '#ffffff',
     }).setOrigin(0.5)
     this.container.add(flash)
@@ -427,7 +428,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
 
     const x = 20
     const y = 340
-    const w = PANEL_W - 160
+    const w = CR - 160
     const h = 12
     const pct = this.stress / this.stressMax
 
