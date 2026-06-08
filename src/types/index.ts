@@ -37,7 +37,8 @@ export interface GameState {
   extractorCount: number
   maxIntegrity: number
   hasUnlockedExtractor2: boolean
-  hasReadSpool: boolean
+  unlockedSpools: string[]
+  readSpools: string[]
   completedWrecks: string[]
   lastCompletedWreck: string | null
 }

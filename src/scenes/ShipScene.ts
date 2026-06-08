@@ -114,8 +114,8 @@ export class ShipScene extends Phaser.Scene {
       .on('pointerout', () => returnBtn.setColor(ACCENT))
       .on('pointerdown', () => {
         const gs = GameState.get()
-        if (gs.completedWrecks.length >= 4 && !gs.hasReadSpool) {
-          gs.hasReadSpool = true
+        if (gs.completedWrecks.length >= 4 && !gs.readSpools.length) {
+          gs.readSpools.push('last-voices-01')
           this.scene.start('SpoolScene', { spoolId: 'last-voices-01' })
         } else {
           this.scene.start('ScannerScene')

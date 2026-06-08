@@ -37,6 +37,7 @@ export class BootScene extends Phaser.Scene {
     this.time.delayedCall(2000, () => {
       blinkTimer.destroy()
       this.scene.start('ScannerScene')
+      this.scene.launch('ShipHudScene')
     })
   }
 }

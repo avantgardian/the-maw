@@ -66,7 +66,7 @@ export class ProcessingScene extends Phaser.Scene {
     // Mark a random section as containing a Data Spool (only on the 4th wreck)
     this.spoolFoundThisRun = false
     const gs = GameState.get()
-    if (!gs.hasReadSpool && gs.completedWrecks.length >= 3) {
+    if (!gs.readSpools.length && gs.completedWrecks.length >= 3) {
       const idx = Phaser.Math.Between(0, this.sections.length - 1)
       this.sections[idx].containsSpool = true
     }

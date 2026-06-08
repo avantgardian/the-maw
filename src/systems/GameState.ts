@@ -6,7 +6,8 @@ const defaultState: GameStateType = {
   extractorCount: 1,
   maxIntegrity: 100,
   hasUnlockedExtractor2: false,
-  hasReadSpool: false,
+  unlockedSpools: [],
+  readSpools: [],
   completedWrecks: [],
   lastCompletedWreck: null,
 }
@@ -46,8 +47,28 @@ export const GameState = {
     state.extractorCount = 2
   },
 
-  readSpool() {
-    state.hasReadSpool = true
+  unlockSpool(id: string) {
+    if (!state.unlockedSpools.includes(id)) {
+      state.unlockedSpools.push(id)
+    }
+  },
+
+  hasUnlockedSpool(id: string): boolean {
+    return state.unlockedSpools.includes(id)
+  },
+
+  getUnlockedSpools(): string[] {
+    return [...state.unlockedSpools]
+  },
+
+  markSpoolRead(id: string) {
+    if (!state.readSpools.includes(id)) {
+      state.readSpools.push(id)
+    }
+  },
+
+  hasReadSpool(id: string): boolean {
+    return state.readSpools.includes(id)
   },
 
   reset() {

@@ -8,7 +8,7 @@ const SWEEP_DURATION = 3000
 const G = '#00ff66'
 const G_DIM = '#004422'
 
-type Phase = 'idle' | 'contactLost' | 'sweeping' | 'ready'
+
 
 export class ScannerScene extends Phaser.Scene {
   private sweepAngle = 0
@@ -24,12 +24,7 @@ export class ScannerScene extends Phaser.Scene {
   private infoText!: Phaser.GameObjects.Text
   private sweepBtn!: Phaser.GameObjects.Text
   private statusBar!: Phaser.GameObjects.Text
-
-  private phase: Phase = 'idle'
-  private contactLostShipId: string | null = null
-  private contactLostAlpha = 1
-  private contactLostAngle = 0
-  private contactLostLabel: Phaser.GameObjects.Text | null = null
+  private latchBtn: Phaser.GameObjects.Text | null = null
 
   constructor() {
     super({ key: 'ScannerScene' })
@@ -41,12 +36,9 @@ export class ScannerScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#000000')
 
     const H = this.scale.height
-    const gs = GameState.get()
 
     // Radar center
     const cx = 240
-    const cy = 240
-    const radius = 180
 
     this.sweepGraphics = this.add.graphics()
     this.contactLabels = []
@@ -54,6 +46,7 @@ export class ScannerScene extends Phaser.Scene {
     this.isSweeping = false
     this.ambientScan = false
     this.contacts = []
+    this.latchBtn = null
 
     // Title
     this.add.text(cx, 30, 'PHASE-ARRAY SCANNER', {
@@ -79,7 +72,7 @@ export class ScannerScene extends Phaser.Scene {
     })
 
     // Sweep button
-    this.sweepBtn = this.add.text(240, 470, '[ DISCOVERY SWEEP ]', {
+    this.sweepBtn = this.add.text(cx, 470, '[ DISCOVERY SWEEP ]', {
       fontFamily: 'monospace', fontSize: '14px', color: G,
       backgroundColor: '#001a00', padding: { x: 12, y: 6 },
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
@@ -93,62 +86,7 @@ export class ScannerScene extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '9px', color: G_DIM,
     })
 
-    // Check if we just returned from processing a completed wreck
-    if (gs.lastCompletedWreck) {
-      this.contactLostShipId = gs.lastCompletedWreck
-      this.contactLostAlpha = 1
-      this.contactLostAngle = -Math.PI / 3 + Math.PI / 4 * 0
-      this.phase = 'contactLost'
-      this.sweepBtn.disableInteractive()
-      this.sweepBtn.setAlpha(0.4)
-      this.updateStatus('CONTACT LOST...')
-
-      const lostShip = getShip(this.contactLostShipId)
-      if (lostShip) {
-        const px = cx + Math.cos(this.contactLostAngle) * radius * 0.45
-        const py = cy + Math.sin(this.contactLostAngle) * radius * 0.45
-        this.contactLostLabel = this.add.text(px, py - 16, `LOST: ${lostShip.name.toUpperCase()}`, {
-          fontFamily: 'monospace', fontSize: '7px', color: '#ff4400',
-        }).setOrigin(0.5)
-      }
-
-      this.tweens.add({
-        targets: this,
-        contactLostAlpha: 0,
-        duration: 1500,
-        ease: 'Cubic.easeOut',
-        onUpdate: () => {
-          if (this.contactLostLabel) {
-            this.contactLostLabel.setAlpha(this.contactLostAlpha)
-          }
-          // Scatter particles each tick
-          if (Math.random() > 0.5) {
-            const px = cx + Math.cos(this.contactLostAngle) * radius * 0.45 + Phaser.Math.Between(-10, 10)
-            const py = cy + Math.sin(this.contactLostAngle) * radius * 0.45 + Phaser.Math.Between(-10, 10)
-            const spark = this.add.text(px, py, '+', {
-              fontFamily: 'monospace', fontSize: '7px', color: '#ff4400',
-            }).setOrigin(0.5)
-            this.tweens.add({
-              targets: spark, alpha: 0, y: py - 20, duration: 600,
-              onComplete: () => spark.destroy(),
-            })
-          }
-        },
-        onComplete: () => {
-          gs.lastCompletedWreck = null
-          this.contactLostShipId = null
-          if (this.contactLostLabel) {
-            this.contactLostLabel.destroy()
-            this.contactLostLabel = null
-          }
-          this.phase = 'ready'
-          this.sweepBtn.setInteractive({ useHandCursor: true })
-          this.sweepBtn.setAlpha(1)
-          this.updateStatus('CONTACT LOST — READY FOR RESWEEP')
-          this.stateText.setText('NO ACTIVE CONTACTS')
-        },
-      })
-    }
+    // Check for contact-lost entrance removed — ShipHudScene is always visible
   }
 
   update(time: number, delta: number) {
@@ -170,22 +108,6 @@ export class ScannerScene extends Phaser.Scene {
 
     this.sweepGraphics.fillStyle(0x00ff66, 0.8)
     this.sweepGraphics.fillCircle(cx, cy, 3)
-
-    // Contact-lost animation
-    if (this.phase === 'contactLost' && this.contactLostShipId) {
-      const px = cx + Math.cos(this.contactLostAngle) * radius * 0.45
-      const py = cy + Math.sin(this.contactLostAngle) * radius * 0.45
-
-      // Fading blip
-      const blink = Math.sin(time / 200) > 0
-      this.sweepGraphics.fillStyle(0xff4400, this.contactLostAlpha * (blink ? 1 : 0.3))
-      this.sweepGraphics.fillCircle(px, py, 4)
-
-      // Cross-out
-      this.sweepGraphics.lineStyle(1, 0xff4400, this.contactLostAlpha * 0.7)
-      this.sweepGraphics.lineBetween(px - 6, py - 6, px + 6, py + 6)
-      this.sweepGraphics.lineBetween(px + 6, py - 6, px - 6, py + 6)
-    }
 
     // Sweep line — only during active sweep
     if (this.isSweeping) {
@@ -262,13 +184,17 @@ export class ScannerScene extends Phaser.Scene {
     }
 
     // Pulse sweep button as call-to-action when idle
-    if (this.contacts.length === 0 && !this.isSweeping && this.phase !== 'contactLost') {
+    if (this.contacts.length === 0 && !this.isSweeping && !this.isPanelOpen()) {
       this.sweepBtn.setAlpha(0.55 + 0.45 * Math.sin(time / 400))
     }
   }
 
+  private isPanelOpen(): boolean {
+    return this.scene.isActive('ProcessingPanelScene') || this.scene.isActive('SpoolPanelScene')
+  }
+
   private startSweep() {
-    if (this.isSweeping) return
+    if (this.isPanelOpen() || this.isSweeping) return
     this.isSweeping = true
     this.ambientScan = false
     this.sweepAngle = 0
@@ -282,12 +208,15 @@ export class ScannerScene extends Phaser.Scene {
     this.contactLabels = []
     this.selectedShipId = null
     this.infoText.setText('')
+    if (this.latchBtn) {
+      this.latchBtn.destroy()
+      this.latchBtn = null
+    }
   }
 
   private onSweepComplete() {
     this.sweepBtn.setAlpha(1)
     this.sweepBtn.setInteractive({ useHandCursor: true })
-    this.phase = 'ready'
     this.ambientScan = true
     this.ambientAngle = this.sweepAngle % (Math.PI * 2)
 
@@ -359,7 +288,16 @@ export class ScannerScene extends Phaser.Scene {
   }
 
   private selectContact(ship: ShipDef) {
+    if (this.isPanelOpen()) return
     this.selectedShipId = ship.id
+
+    // Destroy previous latch button + info if re-selecting
+    if (this.latchBtn) {
+      this.latchBtn.destroy()
+      this.latchBtn = null
+    }
+    this.infoText.setText('')
+
     this.renderContactList()
 
     this.infoText.setText(
@@ -372,18 +310,19 @@ export class ScannerScene extends Phaser.Scene {
     )
 
     const lx = 480
-    const latchBtn = this.add.text(lx, 450, '[ LATCH & PROCESS ]', {
+    this.latchBtn = this.add.text(lx, 450, '[ LATCH & PROCESS ]', {
       fontFamily: 'monospace', fontSize: '13px', color: G,
       backgroundColor: '#001a00', padding: { x: 10, y: 5 },
     }).setInteractive({ useHandCursor: true })
 
-    latchBtn.on('pointerover', () => latchBtn.setColor('#ffffff'))
-    latchBtn.on('pointerout', () => latchBtn.setColor(G))
-    latchBtn.on('pointerdown', () => {
+    this.latchBtn.on('pointerover', () => this.latchBtn!.setColor('#ffffff'))
+    this.latchBtn.on('pointerout', () => this.latchBtn!.setColor(G))
+    this.latchBtn.on('pointerdown', () => {
+      if (this.isPanelOpen()) return
       this.updateStatus('LATCHING...')
-      latchBtn.removeInteractive()
+      this.latchBtn!.removeInteractive()
       this.time.delayedCall(500, () => {
-        this.scene.start('ProcessingScene', { shipId: ship.id })
+        this.scene.launch('ProcessingPanelScene', { shipId: ship.id })
       })
     })
   }
