@@ -51,7 +51,7 @@ export class ShipHudScene extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '7px', color: '#66aaff',
     }).setOrigin(0.5)
 
-    this.createMiniBtn(SX + SW / 2, 70, 'RP', () => {
+    this.createMiniBtn(SX + SW / 2, 70, 'REP HULL', () => {
       const gs = GameState.get()
       if (gs.resources.alloy <= 0) return
       const spend = Math.min(gs.resources.alloy, 20)
@@ -70,7 +70,7 @@ export class ShipHudScene extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '7px', color: '#cc88ff',
     }).setOrigin(0.5)
 
-    this.createMiniBtn(SX + SW / 2, 124, 'RP', () => {
+    this.createMiniBtn(SX + SW / 2, 124, 'REP MAW', () => {
       const gs = GameState.get()
       if (gs.resources.nodes <= 0) return
       const spend = Math.min(gs.resources.nodes, 20)
