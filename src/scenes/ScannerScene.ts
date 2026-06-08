@@ -16,7 +16,7 @@ export class ScannerScene extends Phaser.Scene {
   private isSweeping = false
   private ambientScan = false
   private sweepStartTime = 0
-  private contacts: { shipId: string; angle: number; revealed: boolean; lastPinged: number }[] = []
+  private contacts: { shipId: string; angle: number; revealed: boolean; lastPinged: number; zone: Phaser.GameObjects.Zone | null }[] = []
   private selectedShipId: string | null = null
   private sweepGraphics!: Phaser.GameObjects.Graphics
   private contactLabels: Phaser.GameObjects.Text[] = []
@@ -215,6 +215,7 @@ export class ScannerScene extends Phaser.Scene {
       this.selectedShipId = null
       this.infoText.setText('')
       gs.lastCompletedWreck = null
+      this.contacts.forEach(c => { if (c.zone) c.zone.destroy() })
       this.contacts = []
       this.contactLabels.forEach(l => l.destroy())
       this.contactLabels = []
@@ -249,6 +250,7 @@ export class ScannerScene extends Phaser.Scene {
     this.sweepBtn.setAlpha(0.4)
     this.updateStatus('SWEEP IN PROGRESS...')
 
+    this.contacts.forEach(c => { if (c.zone) c.zone.destroy() })
     this.contacts = []
     this.contactLabels.forEach(l => l.destroy())
     this.contactLabels = []
@@ -283,6 +285,7 @@ export class ScannerScene extends Phaser.Scene {
         angle,
         revealed: false,
         lastPinged: 0,
+        zone: null,
       })
     })
 
@@ -291,6 +294,15 @@ export class ScannerScene extends Phaser.Scene {
         c.revealed = true
         c.lastPinged = this.time.now
         this.renderContactList()
+
+        // Create interactive zone on the radar dot
+        const px = 240 + Math.cos(c.angle) * 180 * 0.45
+        const py = 240 + Math.sin(c.angle) * 180 * 0.45
+        c.zone = this.add.zone(px, py, 20, 20).setInteractive({ useHandCursor: true })
+        c.zone.on('pointerdown', () => {
+          const ship = getShip(c.shipId)
+          if (ship) this.selectContact(ship)
+        })
       })
     })
 
