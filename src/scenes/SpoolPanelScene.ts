@@ -4,6 +4,7 @@ import { GameState } from '../systems/GameState'
 import { getSpool } from '../data/spools'
 const G = '#00ff66'
 const G_DIM = '#004422'
+const R_DIM = '#661111'
 const PANEL_X = 240
 const PANEL_W = 720
 const CR = PANEL_W - 88
@@ -107,11 +108,11 @@ export class SpoolPanelScene extends Phaser.Scene {
 
     // Close
     const closeBtn = this.add.text(CR - 14, 10, '[X]', {
-      fontFamily: 'monospace', fontSize: '11px', color: G_DIM,
+      fontFamily: 'monospace', fontSize: '11px', color: R_DIM,
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
     closeBtn.on('pointerdown', () => this.closePanel())
-    closeBtn.on('pointerover', () => closeBtn.setColor('#ffffff'))
-    closeBtn.on('pointerout', () => closeBtn.setColor(G_DIM))
+    closeBtn.on('pointerover', () => closeBtn.setColor('#ff4444'))
+    closeBtn.on('pointerout', () => closeBtn.setColor(R_DIM))
     this.container.add(closeBtn)
 
     const unlocked = GameState.get().unlockedSpools
@@ -232,11 +233,11 @@ export class SpoolPanelScene extends Phaser.Scene {
 
     // Close
     const closeBtn = this.add.text(CR - 14, 10, '[X]', {
-      fontFamily: 'monospace', fontSize: '11px', color: G_DIM,
+      fontFamily: 'monospace', fontSize: '11px', color: R_DIM,
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
     closeBtn.on('pointerdown', () => this.closePanel())
-    closeBtn.on('pointerover', () => closeBtn.setColor('#ffffff'))
-    closeBtn.on('pointerout', () => closeBtn.setColor(G_DIM))
+    closeBtn.on('pointerover', () => closeBtn.setColor('#ff4444'))
+    closeBtn.on('pointerout', () => closeBtn.setColor(R_DIM))
     this.subContainer.add(closeBtn)
 
     const threadL = this.add.text(CR / 2, 34, `// ${spool.thread} //`, {

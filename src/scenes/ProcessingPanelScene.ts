@@ -7,6 +7,7 @@ import type { ShipDef, ResourceType } from '../types'
 const O = '#ff8800'
 const O_DIM = '#553300'
 const O_BG = '#1a0e00'
+const R_DIM = '#661111'
 const PANEL_X = 240
 const PANEL_W = 720
 const CR = PANEL_W - 88
@@ -115,11 +116,11 @@ export class ProcessingPanelScene extends Phaser.Scene {
 
     // Close button
     const closeBtn = this.add.text(CR - 14, 10, '[X]', {
-      fontFamily: 'monospace', fontSize: '11px', color: O_DIM,
+      fontFamily: 'monospace', fontSize: '11px', color: R_DIM,
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
     closeBtn.on('pointerdown', () => this.closePanel())
-    closeBtn.on('pointerover', () => closeBtn.setColor('#ffffff'))
-    closeBtn.on('pointerout', () => closeBtn.setColor(O_DIM))
+    closeBtn.on('pointerover', () => closeBtn.setColor('#ff4444'))
+    closeBtn.on('pointerout', () => closeBtn.setColor(R_DIM))
     this.container.add(closeBtn)
 
     // Section graphics
