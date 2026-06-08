@@ -8,6 +8,7 @@ const defaultState: GameStateType = {
   hasUnlockedExtractor2: false,
   unlockedSpools: [],
   readSpools: [],
+  partialWrecks: {},
   completedWrecks: [],
   lastCompletedWreck: null,
 }
@@ -69,6 +70,18 @@ export const GameState = {
 
   hasReadSpool(id: string): boolean {
     return state.readSpools.includes(id)
+  },
+
+  savePartialWreck(id: string, sections: number[]) {
+    state.partialWrecks[id] = [...sections]
+  },
+
+  getPartialWreck(id: string): number[] | undefined {
+    return state.partialWrecks[id]
+  },
+
+  clearPartialWreck(id: string) {
+    delete state.partialWrecks[id]
   },
 
   reset() {

@@ -25,6 +25,7 @@ export class ScannerScene extends Phaser.Scene {
   private sweepBtn!: Phaser.GameObjects.Text
   private statusBar!: Phaser.GameObjects.Text
   private latchBtn: Phaser.GameObjects.Text | null = null
+  private wasProcessingActive = false
 
   constructor() {
     super({ key: 'ScannerScene' })
@@ -93,6 +94,13 @@ export class ScannerScene extends Phaser.Scene {
     const cx = 240
     const cy = 240
     const radius = 180
+
+    // Detect when processing panel closes and reset scanner state
+    const isProcessing = this.scene.isActive('ProcessingPanelScene')
+    if (this.wasProcessingActive && !isProcessing) {
+      this.onReturnFromProcessing()
+    }
+    this.wasProcessingActive = isProcessing
 
     this.sweepGraphics.clear()
 
@@ -191,6 +199,44 @@ export class ScannerScene extends Phaser.Scene {
 
   private isPanelOpen(): boolean {
     return this.scene.isActive('ProcessingPanelScene') || this.scene.isActive('SpoolPanelScene')
+  }
+
+  private onReturnFromProcessing() {
+    const gs = GameState.get()
+    this.isSweeping = false
+    this.ambientScan = false
+
+    // Wreck was completed — clear contacts, force re-sweep
+    if (gs.lastCompletedWreck) {
+      if (this.latchBtn) {
+        this.latchBtn.destroy()
+        this.latchBtn = null
+      }
+      this.selectedShipId = null
+      this.infoText.setText('')
+      gs.lastCompletedWreck = null
+      this.contacts = []
+      this.contactLabels.forEach(l => l.destroy())
+      this.contactLabels = []
+      this.stateText.setText('AWAITING SWEEP...')
+
+      this.sweepBtn.disableInteractive()
+      this.sweepBtn.setAlpha(0.4)
+      this.updateStatus('CONTACT LOST...')
+
+      this.time.delayedCall(1500, () => {
+        this.sweepBtn.setInteractive({ useHandCursor: true })
+        this.sweepBtn.setAlpha(1)
+        this.updateStatus('READY FOR RESWEEP')
+      })
+      return
+    }
+
+    // Cancelled — just re-enable the latch button
+    if (this.latchBtn) {
+      this.latchBtn.setInteractive({ useHandCursor: true })
+    }
+    this.updateStatus('READY')
   }
 
   private startSweep() {

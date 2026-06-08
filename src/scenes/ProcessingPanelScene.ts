@@ -71,6 +71,19 @@ export class ProcessingPanelScene extends Phaser.Scene {
       containsSpool: false,
     }))
 
+    // Restore partial progress if this ship was partially processed before
+    const partial = GameState.getPartialWreck(this.ship.id)
+    if (partial) {
+      for (let i = 0; i < this.sections.length; i++) {
+        if (i < partial.length) {
+          this.sections[i].current = partial[i]
+        }
+      }
+      // Restore active section to first non-depleted section
+      this.activeSection = this.sections.findIndex(s => s.current > 0)
+      if (this.activeSection < 0) this.activeSection = 0
+    }
+
     // Mark a random section for a spool the player hasn't unlocked yet
     const gs = GameState.get()
     const nextSpool = SPOOL_IDS.find(id => !gs.unlockedSpools.includes(id))
@@ -367,6 +380,8 @@ export class ProcessingPanelScene extends Phaser.Scene {
     this.cameras.main.flash(200, 255, 0, 0)
     this.updateStatus('WRECK RUPTURED — UNPROCESSED SECTIONS LOST')
 
+    GameState.clearPartialWreck(this.ship.id)
+
     const flash = this.add.text(CR / 2, this.scale.height / 2 - 40, 'WRECK RUPTURED', {
       fontFamily: 'monospace', fontSize: '16px', color: '#ff4444',
     }).setOrigin(0.5)
@@ -388,12 +403,14 @@ export class ProcessingPanelScene extends Phaser.Scene {
     })
 
     GameState.completeWreck(this.ship.id)
+    GameState.clearPartialWreck(this.ship.id)
     this.time.delayedCall(1000, () => this.slideOut())
   }
 
   private detach() {
     if (this.detached) return
     this.detached = true
+    this.savePartialState()
     this.slideOut()
   }
 
@@ -413,6 +430,7 @@ export class ProcessingPanelScene extends Phaser.Scene {
   private closePanel() {
     if (this.detached) return
     this.detached = true
+    this.savePartialState()
     this.input.enabled = false
     this.tweens.add({
       targets: this.container,
@@ -455,5 +473,12 @@ export class ProcessingPanelScene extends Phaser.Scene {
 
   private updateStatus(msg: string) {
     this.statusText.setText(msg)
+  }
+
+  private savePartialState() {
+    GameState.savePartialWreck(
+      this.ship.id,
+      this.sections.map(s => s.current)
+    )
   }
 }

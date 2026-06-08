@@ -39,6 +39,7 @@ export interface GameState {
   hasUnlockedExtractor2: boolean
   unlockedSpools: string[]
   readSpools: string[]
+  partialWrecks: Record<string, number[]>
   completedWrecks: string[]
   lastCompletedWreck: string | null
 }
