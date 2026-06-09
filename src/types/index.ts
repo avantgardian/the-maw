@@ -26,17 +26,8 @@ export interface ResourceState {
   biomass: number
 }
 
-export interface SystemState {
-  hull: number
-  mawCore: number
-}
-
 export interface GameState {
   resources: ResourceState
-  systems: SystemState
-  extractorCount: number
-  maxIntegrity: number
-  hasUnlockedExtractor2: boolean
   unlockedSpools: string[]
   readSpools: string[]
   partialWrecks: Record<string, number[]>

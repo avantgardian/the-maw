@@ -7,7 +7,7 @@ const G_DIM = '#004422'
 const R_DIM = '#661111'
 const PANEL_X = 240
 const PANEL_W = 720
-const CR = PANEL_W - 88
+const CR = PANEL_W
 const CHAR_DELAY = 50
 
 export class SpoolPanelScene extends Phaser.Scene {
@@ -49,9 +49,6 @@ export class SpoolPanelScene extends Phaser.Scene {
     // Sub container (hidden initially)
     this.subContainer = this.add.container(this.scale.width, 0)
     this.subContainer.setVisible(false)
-
-    // Ensure sidebar stays on top
-    this.scene.bringToTop('ShipHudScene')
 
     // Slide in (grid panel)
     this.tweens.add({
@@ -282,8 +279,6 @@ export class SpoolPanelScene extends Phaser.Scene {
 
     this.advanceLine()
 
-    this.scene.bringToTop('ShipHudScene')
-
     // Slide in
     this.tweens.add({
       targets: this.subContainer,
@@ -335,7 +330,6 @@ export class SpoolPanelScene extends Phaser.Scene {
     })
 
     this.buildGrid()
-    this.scene.bringToTop('ShipHudScene')
     this.tweens.add({
       targets: this.container,
       x: PANEL_X,

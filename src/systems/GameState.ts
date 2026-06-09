@@ -2,10 +2,6 @@ import type { GameState as GameStateType } from '../types'
 
 const defaultState: GameStateType = {
   resources: { alloy: 0, oil: 0, nodes: 0, biomass: 0 },
-  systems: { hull: 20, mawCore: 10 },
-  extractorCount: 1,
-  maxIntegrity: 100,
-  hasUnlockedExtractor2: false,
   unlockedSpools: [],
   readSpools: [],
   partialWrecks: {},
@@ -28,24 +24,11 @@ export const GameState = {
     return true
   },
 
-  setSystem(system: keyof GameStateType['systems'], value: number) {
-    state.systems[system] = Math.min(100, Math.max(0, value))
-  },
-
-  repairSystem(system: keyof GameStateType['systems'], amount: number) {
-    state.systems[system] = Math.min(100, state.systems[system] + amount)
-  },
-
   completeWreck(id: string) {
     if (!state.completedWrecks.includes(id)) {
       state.completedWrecks.push(id)
       state.lastCompletedWreck = id
     }
-  },
-
-  unlockExtractor2() {
-    state.hasUnlockedExtractor2 = true
-    state.extractorCount = 2
   },
 
   unlockSpool(id: string) {
